@@ -65,6 +65,7 @@ if (!Object.prototype.extend) {
 module.exports = (function () {
   
   aStarProto = {
+    'updateFrequency' : 150,
 
   	'openSet' : [],
 
@@ -81,19 +82,20 @@ module.exports = (function () {
   		    tempCurrent;
 
       if (this.immediateSet.length) {
-        this.immediateSet[0].getFScore(this.current);
         for (var i = 0; i < this.immediateSet.length; i += 1) {
-          if (!tempCurrent || this.immediateSet[i].getFScore(this.current) < tempCurrent.fScore) {
+          if (!tempCurrent || this.immediateSet[i].fScore < tempCurrent.fScore) {
             tempCurrent = this.immediateSet[i];
           }
         }
       } else {
-        this.openSet[0].getFScore(this.current);
         for (var i = 0; i < this.openSet.length; i += 1) {
-          if (!tempCurrent || this.openSet[i].getFScore(this.current) < tempCurrent.fScore) {
+          if (!tempCurrent || this.openSet[i].fScore < tempCurrent.fScore) {
           	tempCurrent = this.openSet[i];
           }
         }
+      }
+      if(tempCurrent.id !== "Start" && tempCurrent.id !== "End") {
+        tempCurrent.id = "Closed";
       }
       this.closedSet.push(tempCurrent);
       this.openSet.splice(this.openSet.indexOf(tempCurrent), 1);
@@ -106,7 +108,11 @@ module.exports = (function () {
       	this.myBoard.drawGameBoard();
       	return;
       }
-      return this.aStar();      
+      var that = this;
+      setTimeout(function () {
+        that.myBoard.drawGameBoard();
+        that.aStar();
+      }, this.updateFrequency);
   	},
 
   	'fillOpenSet' : function () {
@@ -118,9 +124,13 @@ module.exports = (function () {
           if (gameState[k] && gameState[k][i]) {
             currTile = gameState[k][i];
             if (currTile.id !== 'Blocked' && this.closedSet.indexOf(currTile) === -1) {
+              currTile.getFScore(this.current);
               immediateSet.push(currTile);
               if (this.openSet.indexOf(currTile) === -1) {
                 this.openSet.push(currTile);
+                if(currTile.id !== "End") {
+                  currTile.id = "OpenSet";
+                }
               }
             }
           }
@@ -143,8 +153,8 @@ module.exports = (function () {
     var startTile = that.gameState[that.myBoard.startRow][that.myBoard.startCol];
   	startTile.parent = startTile;
   	startTile.gScore = 0;
-	  that.immediateSet.push(startTile);
-    that.current = startTile;
+    startTile.getFScore(startTile);
+	  that.openSet.push(startTile);
 	  //that.aStar(that.gameState);
   	return that;
   }
@@ -189,17 +199,19 @@ module.exports = (function () {
       for (var j = 0; j < 40; j += 1) {
         for (var m = 0; m < 40; m += 1) {
           if (this.gameState[j][m].id === 0) {
-            ctx.fillStyle = '#FFFFFF';
+            ctx.fillStyle = '#DAE8F5';
           } else if (this.gameState[j][m].id === 'Blocked') {
-            ctx.fillStyle = '#FF0000';
+            ctx.fillStyle = '#940413';
           } else if (this.gameState[j][m].id === 'Start') {
             ctx.fillStyle = '#0000FF';
           } else if (this.gameState[j][m].id === 'End') {
             ctx.fillStyle = '#00FF00';
+          } else if (this.gameState[j][m].id === 'OpenSet') {
+            ctx.fillStyle = '#05A8A0';
           } else if (this.gameState[j][m].id === 'Path') {
             ctx.fillStyle = '#FF4500';
           } else if (this.gameState[j][m].id === 'Closed') {
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = '#A8059D';
           }
           ctx.beginPath();
           ctx.arc((m * 10) + ((m + 1) * 10), ((j * 10) + ((j + 1) * 10)), 10, 0, Math.PI*2, true)

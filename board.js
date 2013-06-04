@@ -31,17 +31,19 @@ module.exports = (function () {
       for (var j = 0; j < 40; j += 1) {
         for (var m = 0; m < 40; m += 1) {
           if (this.gameState[j][m].id === 0) {
-            ctx.fillStyle = '#FFFFFF';
+            ctx.fillStyle = '#DAE8F5';
           } else if (this.gameState[j][m].id === 'Blocked') {
-            ctx.fillStyle = '#FF0000';
+            ctx.fillStyle = '#940413';
           } else if (this.gameState[j][m].id === 'Start') {
             ctx.fillStyle = '#0000FF';
           } else if (this.gameState[j][m].id === 'End') {
             ctx.fillStyle = '#00FF00';
+          } else if (this.gameState[j][m].id === 'OpenSet') {
+            ctx.fillStyle = '#05A8A0';
           } else if (this.gameState[j][m].id === 'Path') {
             ctx.fillStyle = '#FF4500';
           } else if (this.gameState[j][m].id === 'Closed') {
-            ctx.fillStyle = '#000000';
+            ctx.fillStyle = '#A8059D';
           }
           ctx.beginPath();
           ctx.arc((m * 10) + ((m + 1) * 10), ((j * 10) + ((j + 1) * 10)), 10, 0, Math.PI*2, true)
