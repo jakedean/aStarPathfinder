@@ -1,13 +1,7 @@
 module.exports = (function () {
   
   aStarProto = {
-    'updateFrequency' : 150,
-
-  	'openSet' : [],
-
-  	'closedSet' : [],
-
-  	'tracer' : [],
+    'updateFrequency' : 100,
 
   	'current' : undefined,
 
@@ -15,6 +9,13 @@ module.exports = (function () {
   		var gameState = this.gameState,
   		    tempCurrent;
 
+      if(!this.openSet.length) {
+        console.log("there is no path to from start to end point");
+        setTimeout(function () {
+          window.restart();
+        }, 2000);
+        return;
+      }
       for (var i = 0; i < this.openSet.length; i += 1) {
         if (!tempCurrent || this.openSet[i].fScore < tempCurrent.fScore) {
         	tempCurrent = this.openSet[i];
@@ -33,6 +34,9 @@ module.exports = (function () {
       	console.log('Path found.');
       	this.setPath(this.current.parent);
       	this.myBoard.drawGameBoard();
+        setTimeout(function () {
+          window.restart();
+        }, 2500);
       	return;
       }
       var that = this;
@@ -73,13 +77,16 @@ module.exports = (function () {
   }
   
   var init = function (that) {
+    that.openSet =  [];
+  	that.closedSet = [];
+
   	that.gameState = that.myBoard.gameState;
     var startTile = that.gameState[that.myBoard.startRow][that.myBoard.startCol];
   	startTile.parent = startTile;
   	startTile.gScore = 0;
     startTile.getFScore(startTile);
 	  that.openSet.push(startTile);
-	  //that.aStar(that.gameState);
+	  that.aStar(that.gameState);
   	return that;
   }
 

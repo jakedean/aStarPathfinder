@@ -11,8 +11,10 @@ function eventWindowLoaded() {
 function canvasApp() {
 
 	var myCanvas = document.getElementById('myCanvas'),
-	    ctx = myCanvas.getContext('2d'),
-	    myBoard = board({'ctx' : ctx, 'canvas' : myCanvas}).createGameArray(),
+	    ctx = myCanvas.getContext('2d');
+
+window.restart = function () {
+  var myBoard = board({'ctx' : ctx, 'canvas' : myCanvas}).createGameArray(),
 	    numObstacles = (function (min, max) {
         return ~~(Math.random() * (max - min) + min);
       }(8,39)),
@@ -33,7 +35,6 @@ function canvasApp() {
   myPathFinder = pathFinder({
   	'myBoard' : myBoard
   })
-  window.myPathFinder = myPathFinder;
-  update(ctx, myCanvas);  
-
+}
+window.restart();
 }

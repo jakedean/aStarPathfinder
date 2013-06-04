@@ -12,8 +12,10 @@ function eventWindowLoaded() {
 function canvasApp() {
 
 	var myCanvas = document.getElementById('myCanvas'),
-	    ctx = myCanvas.getContext('2d'),
-	    myBoard = board({'ctx' : ctx, 'canvas' : myCanvas}).createGameArray(),
+	    ctx = myCanvas.getContext('2d');
+
+window.restart = function () {
+  var myBoard = board({'ctx' : ctx, 'canvas' : myCanvas}).createGameArray(),
 	    numObstacles = (function (min, max) {
         return ~~(Math.random() * (max - min) + min);
       }(8,39)),
@@ -34,10 +36,10 @@ function canvasApp() {
   myPathFinder = pathFinder({
   	'myBoard' : myBoard
   })
-  window.myPathFinder = myPathFinder;
-  update(ctx, myCanvas);  
-
 }
+window.restart();
+}
+
 },{"./extend":2,"./board":3,"./aStar":4}],2:[function(require,module,exports){
 // All credit to Anthony Nardi
 // git@github.com:anthony-nardi/Extends.git
@@ -65,13 +67,7 @@ if (!Object.prototype.extend) {
 module.exports = (function () {
   
   aStarProto = {
-    'updateFrequency' : 150,
-
-  	'openSet' : [],
-
-  	'closedSet' : [],
-
-  	'tracer' : [],
+    'updateFrequency' : 100,
 
   	'current' : undefined,
 
@@ -79,6 +75,13 @@ module.exports = (function () {
   		var gameState = this.gameState,
   		    tempCurrent;
 
+      if(!this.openSet.length) {
+        console.log("there is no path to from start to end point");
+        setTimeout(function () {
+          window.restart();
+        }, 2000);
+        return;
+      }
       for (var i = 0; i < this.openSet.length; i += 1) {
         if (!tempCurrent || this.openSet[i].fScore < tempCurrent.fScore) {
         	tempCurrent = this.openSet[i];
@@ -97,6 +100,9 @@ module.exports = (function () {
       	console.log('Path found.');
       	this.setPath(this.current.parent);
       	this.myBoard.drawGameBoard();
+        setTimeout(function () {
+          window.restart();
+        }, 2500);
       	return;
       }
       var that = this;
@@ -137,13 +143,16 @@ module.exports = (function () {
   }
   
   var init = function (that) {
+    that.openSet =  [];
+  	that.closedSet = [];
+
   	that.gameState = that.myBoard.gameState;
     var startTile = that.gameState[that.myBoard.startRow][that.myBoard.startCol];
   	startTile.parent = startTile;
   	startTile.gScore = 0;
     startTile.getFScore(startTile);
 	  that.openSet.push(startTile);
-	  //that.aStar(that.gameState);
+	  that.aStar(that.gameState);
   	return that;
   }
 
@@ -153,6 +162,7 @@ module.exports = (function () {
   }
 
 }());
+
 },{}],3:[function(require,module,exports){
 module.exports = (function () {
   var tile = require('./tile');
