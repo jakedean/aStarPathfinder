@@ -30,7 +30,7 @@ module.exports = (function () {
     },
 
     'getFScore' : function (current) {
-    	this.fScore = this.getHScore() + this.getGScore(current)
+    	this.fScore = (this.getHScore() + this.getGScore(current));
       return this.fScore;
     },
 
