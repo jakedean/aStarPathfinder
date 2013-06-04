@@ -9,27 +9,18 @@ module.exports = (function () {
 
   	'tracer' : [],
 
-    'immediateSet' : [],
-
   	'current' : undefined,
 
   	'aStar' : function () {
   		var gameState = this.gameState,
   		    tempCurrent;
 
-      if (this.immediateSet.length) {
-        for (var i = 0; i < this.immediateSet.length; i += 1) {
-          if (!tempCurrent || this.immediateSet[i].fScore < tempCurrent.fScore) {
-            tempCurrent = this.immediateSet[i];
-          }
-        }
-      } else {
-        for (var i = 0; i < this.openSet.length; i += 1) {
-          if (!tempCurrent || this.openSet[i].fScore < tempCurrent.fScore) {
-          	tempCurrent = this.openSet[i];
-          }
+      for (var i = 0; i < this.openSet.length; i += 1) {
+        if (!tempCurrent || this.openSet[i].fScore < tempCurrent.fScore) {
+        	tempCurrent = this.openSet[i];
         }
       }
+
       if(tempCurrent.id !== "Start" && tempCurrent.id !== "End") {
         tempCurrent.id = "Closed";
       }
@@ -53,7 +44,6 @@ module.exports = (function () {
 
   	'fillOpenSet' : function () {
   		var gameState = this.gameState,
-          immediateSet = [],
           currTile;
       for (var i = this.current.col - 1; i <= this.current.col + 1; i += 1) {
       	for (var k = this.current.row - 1; k <= this.current.row + 1; k += 1) {
@@ -61,7 +51,6 @@ module.exports = (function () {
             currTile = gameState[k][i];
             if (currTile.id !== 'Blocked' && this.closedSet.indexOf(currTile) === -1) {
               currTile.getFScore(this.current);
-              immediateSet.push(currTile);
               if (this.openSet.indexOf(currTile) === -1) {
                 this.openSet.push(currTile);
                 if(currTile.id !== "End") {
@@ -72,7 +61,6 @@ module.exports = (function () {
           }
       	}
       }
-      this.immediateSet = immediateSet;
   	},
 
   	'setPath' : function (tile) {
