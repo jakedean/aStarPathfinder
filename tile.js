@@ -11,6 +11,9 @@ module.exports = (function () {
 	  'parent' : undefined,
     
     'getGScore' : function (current) {
+      if(current === undefined) {
+        console.log("current is undefined... tile.js");
+      }
       var xDiff = Math.abs(this.col - current.col),
           yDiff = Math.abs(this.row - current.row),
           tempGScore = undefined;

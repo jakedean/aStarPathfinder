@@ -38,86 +38,7 @@ function canvasApp() {
   update(ctx, myCanvas);  
 
 }
-},{"./extend":2,"./board":3,"./aStar":4}],4:[function(require,module,exports){
-module.exports = (function () {
-  
-  aStarProto = {
-
-  	'openSet' : [],
-
-  	'closedSet' : [],
-
-  	'tracer' : [],
-    'tempCurrent' : undefined,
-  	'current' : undefined,
-
-  	'aStar' : function () {
-  		var gameState = this.gameState,
-  		    tempCurrent = this.tempCurrent;
-
-      for (var i = 0; i < this.openSet.length; i += 1) {
-        if (!tempCurrent || this.openSet[i].getFScore(this.current) < tempCurrent.fScore) {
-        	tempCurrent = this.openSet[i];
-        }
-      }
-      this.closedSet.push(tempCurrent);
-      this.openSet.splice(this.openSet.indexOf(tempCurrent), 1);
-      this.current = tempCurrent;
-      this.tempCurrent = undefined;
-      this.fillOpenSet(gameState);
-
-      if (this.current === this.gameState[this.myBoard.endRow][this.myBoard.endCol]) {
-      	console.log('Path found.');
-      	this.setPath(this.current.parent);
-      	this.myBoard.drawGameBoard();
-      	return;
-      }
-      return this.aStar();      
-  	},
-
-  	'fillOpenSet' : function () {
-  		var gameState = this.gameState;
-
-      for (var i = this.current.col - 1; i <= this.current.col + 1; i += 1) {
-      	for (var k = this.current.row - 1; k <= this.current.row + 1; k += 1) {
-      		if (gameState[k] && gameState[k][i] &&
-      			  this.current !== gameState[k][i] && 
-      			  this.closedSet.indexOf(this.current) !== -1 &&
-      			  this.openSet.indexOf(this.current) === - 1 &&
-      			  gameState[k][i].id !== 'Blocked'
-      			  ) {
-      			this.openSet.push(gameState[k][i])
-      		}
-      	}
-      }
-  	},
-
-  	'setPath' : function (tile) {
-  		if (tile.id === "Start") return;
-  		console.log('setting path');
-  		this.gameState[tile.row][tile.col].id = 'Path';
-  		this.setPath(tile.parent);
-  	}
-
-  }
-  
-  var init = function (that) {
-  	that.gameState = that.myBoard.gameState;
-    var startTile = that.gameState[that.myBoard.startRow][that.myBoard.startCol];
-  	startTile.parent = startTile;
-  	startTile.gScore = 0;
-	  that.openSet.push(startTile);
-	  //that.aStar(that.gameState);
-  	return that;
-  }
-
-  return function (OO) {
-
-  	return init(Object.create(aStarProto).extend(OO));
-  }
-
-}());
-},{}],2:[function(require,module,exports){
+},{"./extend":2,"./board":3,"./aStar":4}],2:[function(require,module,exports){
 // All credit to Anthony Nardi
 // git@github.com:anthony-nardi/Extends.git
 
@@ -140,6 +61,100 @@ if (!Object.prototype.extend) {
     return this;
   };
 };
+},{}],4:[function(require,module,exports){
+module.exports = (function () {
+  
+  aStarProto = {
+
+  	'openSet' : [],
+
+  	'closedSet' : [],
+
+  	'tracer' : [],
+
+    'immediateSet' : [],
+
+  	'current' : undefined,
+
+  	'aStar' : function () {
+  		var gameState = this.gameState,
+  		    tempCurrent;
+
+      if (this.immediateSet.length) {
+        this.immediateSet[0].getFScore(this.current);
+        for (var i = 0; i < this.immediateSet.length; i += 1) {
+          if (!tempCurrent || this.immediateSet[i].getFScore(this.current) < tempCurrent.fScore) {
+            tempCurrent = this.immediateSet[i];
+          }
+        }
+      } else {
+        this.openSet[0].getFScore(this.current);
+        for (var i = 0; i < this.openSet.length; i += 1) {
+          if (!tempCurrent || this.openSet[i].getFScore(this.current) < tempCurrent.fScore) {
+          	tempCurrent = this.openSet[i];
+          }
+        }
+      }
+      this.closedSet.push(tempCurrent);
+      this.openSet.splice(this.openSet.indexOf(tempCurrent), 1);
+      this.current = tempCurrent;
+      this.fillOpenSet(gameState);
+
+      if (this.current === this.gameState[this.myBoard.endRow][this.myBoard.endCol]) {
+      	console.log('Path found.');
+      	this.setPath(this.current.parent);
+      	this.myBoard.drawGameBoard();
+      	return;
+      }
+      return this.aStar();      
+  	},
+
+  	'fillOpenSet' : function () {
+  		var gameState = this.gameState,
+          immediateSet = [],
+          currTile;
+      for (var i = this.current.col - 1; i <= this.current.col + 1; i += 1) {
+      	for (var k = this.current.row - 1; k <= this.current.row + 1; k += 1) {
+          if (gameState[k] && gameState[k][i]) {
+            currTile = gameState[k][i];
+            if (currTile.id !== 'Blocked' && this.closedSet.indexOf(currTile) === -1) {
+              immediateSet.push(currTile);
+              if (this.openSet.indexOf(currTile) === -1) {
+                this.openSet.push(currTile);
+              }
+            }
+          }
+      	}
+      }
+      this.immediateSet = immediateSet;
+  	},
+
+  	'setPath' : function (tile) {
+  		if (tile.id === "Start") return;
+  		console.log('setting path');
+  		this.gameState[tile.row][tile.col].id = 'Path';
+  		this.setPath(tile.parent);
+  	}
+
+  }
+  
+  var init = function (that) {
+  	that.gameState = that.myBoard.gameState;
+    var startTile = that.gameState[that.myBoard.startRow][that.myBoard.startCol];
+  	startTile.parent = startTile;
+  	startTile.gScore = 0;
+	  that.immediateSet.push(startTile);
+    that.current = startTile;
+	  //that.aStar(that.gameState);
+  	return that;
+  }
+
+  return function (OO) {
+
+  	return init(Object.create(aStarProto).extend(OO));
+  }
+
+}());
 },{}],3:[function(require,module,exports){
 module.exports = (function () {
   var tile = require('./tile');
@@ -264,6 +279,9 @@ module.exports = (function () {
 	  'parent' : undefined,
     
     'getGScore' : function (current) {
+      if(current === undefined) {
+        console.log("current is undefined... tile.js");
+      }
       var xDiff = Math.abs(this.col - current.col),
           yDiff = Math.abs(this.row - current.row),
           tempGScore = undefined;
